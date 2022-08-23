@@ -14,8 +14,8 @@ module public_key_gen(
 // VARIABLES
 //---------------------------------------------------------------------------
 
-localparam P = 8'd227;
-localparam Q = 8'd225;
+localparam p_par = 9'b011100011;/*227*/
+localparam p_max = 9'b111000011; /*451*/
 
 reg [8:0] sum;  // va da 1 a 451
 reg [8:0] result; // va da 1 a 224
@@ -28,8 +28,7 @@ reg [7:0] tmp_publicKey;
 //---------------------------------------------------------------------------
 
 assign err_invalid_seckey = secret_key < 1 || secret_key > P - 1;
-p_par = 9'b011100011;/*227*/
-p_max = 9'b111000011; /*451*/
+
 always @ (*) begin
 
     if(!err_invalid_seckey && mode == 2'b01) begin

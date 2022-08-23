@@ -17,7 +17,7 @@ module encryption(
 
 localparam LOWERCASE_A_CHAR = 8'h61;
 localparam LOWERCASE_Z_CHAR = 8'h7A;
-localparam P = 8'd227;
+localparam p_par = 8'b11100011; /*227*/
 
 reg[7:0] sub;  // va da -227 a +256
 reg[7:0] result;
@@ -28,7 +28,6 @@ reg tmp_C_ready;
 //---------------------------------------------------------------------------
 assign err_invalid_ptxt =  (Plaintext >= LOWERCASE_A_CHAR) &&
                             (Plaintext <= LOWERCASE_Z_CHAR);
-p_par = 8'b11100011;/*227*/
 
 always @ (*) begin
     if(!err_invalid_ptxt && mode == 2'b10) begin
