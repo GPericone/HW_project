@@ -20,7 +20,7 @@ module encryption;
 
 
 
-    public_key_gen sae_dec(
+    encryption sae_dec(
      .clk                       (clk)
     ,.rst_n                     (rst_n)
     ,.mode                      (mode)

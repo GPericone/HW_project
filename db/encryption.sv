@@ -9,7 +9,7 @@ module encryption(
     ,input  [7:0] Public_key
     ,output [7:0] Char_ciphertext
     ,output reg C_ready
-    ,output reg err_invalid_ptxt
+    ,output reg err_invalid_plaintext
 );
 //---------------------------------------------------------------------------
 // VARIABLES
@@ -18,6 +18,8 @@ module encryption(
 localparam LOWERCASE_A_CHAR = 8'h61;
 localparam LOWERCASE_Z_CHAR = 8'h7A;
 localparam p_par = 8'b11100011; /*227*/
+
+wire err_invalid_ptxt;
 
 reg[7:0] sub;  // va da -227 a +256
 reg[7:0] result;
@@ -48,7 +50,7 @@ always @ (*) begin
     else begin
         result = 8'b00000000;
         sub = 8'b00000000;
-        err_invalid_ptxt = 1'b0;
+        err_invalid_plaintext = 1'b1;
         Char_ciphertext = `NULL_CHAR;
         tmp_C_ready = 1'b0;
     end
@@ -57,14 +59,17 @@ end
 always @(posedge clk or negedge rst_n) begin
 	if(!rst_n) begin
 		C_ready <= 1'b0;
+        err_invalid_plaintext = 1'b0;
 		Char_ciphertext <= `NULL_CHAR;
 	end
     else begin
 		if(tmp_C_ready && !err_invalid_ptxt) begin
 			C_ready <= 1'b1;
+            err_invalid_plaintext = 1'b0;
 		end
 		else begin
 			C_ready <= 1'b0;
+            err_invalid_plaintext = 1'b0;
 			Char_ciphertext <= `NULL_CHAR;
 		end
 	end
