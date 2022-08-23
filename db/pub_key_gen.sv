@@ -4,7 +4,7 @@
 module public_key_gen(
      input  clk
     ,input rst_n 
-    ,input  [1:0] mode   // 2'b10 è la modalità per decifrare
+    ,input  [1:0] mode   // 2'b01 è la modalità per decifrare
     ,input  [7:0] Secret_key
     ,output reg [7:0] Public_key
     ,output reg P_K_ready
