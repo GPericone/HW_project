@@ -10,7 +10,7 @@ module decryption (
     ,input [7:0] secret_key
     ,output reg [7:0] plaintext
     ,output reg output_ready
-    ,output err_invalid_seckey
+    ,output reg err_invalid_seckey
     ,output reg err_invalid_ctxt_char
 );
 
