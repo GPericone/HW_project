@@ -35,7 +35,7 @@ module pub_key_gen_tb_checks;
 
         @(posedge clk);
         @(posedge clk);		
-        $display("SECRET KEY: %h - PUBLICKEY: %h", secret_key, Public_key);
+        $display("SECRET KEY: %h - PUBLICKEY: %h", Secret_key, Public_key);
 
         $stop;
 

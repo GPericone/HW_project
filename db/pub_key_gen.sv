@@ -8,14 +8,15 @@ module public_key_gen(
     ,input  [7:0] Secret_key
     ,output reg [7:0] Public_key
     ,output reg P_K_ready
-    ,output err_invalid_seckey
+    ,output reg err_invalid_seckey
 );
 //---------------------------------------------------------------------------
 // VARIABLES
 //---------------------------------------------------------------------------
 
-localparam p_par = 9'b011100011;/*227*/
+localparam p_par = 8'b11100011;//9'b011100011;/*227*/
 localparam p_max = 9'b111000011; /*451*/
+localparam q_par = 8'b011100001; /*225*/
 
 reg [8:0] sum;  // va da 1 a 451
 reg [8:0] result; // va da 1 a 224
@@ -27,18 +28,18 @@ reg [7:0] tmp_publicKey;
 // LOGIC DESIGN
 //---------------------------------------------------------------------------
 
-assign err_invalid_seckey = secret_key < 1 || secret_key > P - 1;
+assign err_invalid_seckey = secret_key < 8'b00000001 || secret_key > {p_par - 8'b00000001};//p_par - 9'b000000001;
 
 always @ (*) begin
 
     if(!err_invalid_seckey && mode == 2'b01) begin
-        sum = ciphertext +secret_key + Q;
-        if(sum >= 9'b000000001 && sum <=p_par) begin
+        sum = secret_key + q_par;
+        if(sum >= 9'b000000001 && sum <={1'b0 , p_par}) begin
             result = sum;
-            tmp_P_K_ready = 1'b1;
+            tmp_P_K_ready = 1'b1; 
         end
-        else if(sum > 9'b000000001 && sum <=p_max) begin
-            result = sum - p_par;
+        else if(sum > 9'b000000001 && sum <= p_max) begin
+            result = sum - {1'b0 , p_par};
             tmp_P_K_ready = 1'b1;
         end
         tmp_publicKey = result[7:0];

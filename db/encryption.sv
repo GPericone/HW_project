@@ -7,7 +7,7 @@ module encryption(
     ,input  [1:0] mode   // 2'b10 è la modalità per decifrare
     ,input  [7:0] Plaintext
     ,input  [7:0] Public_key
-    ,output [7:0] Char_ciphertext
+    ,output reg [7:0] Char_ciphertext
     ,output reg C_ready
     ,output reg err_invalid_plaintext
 );
