@@ -9,7 +9,7 @@ module encryption(
     ,input  [7:0] Public_key
     ,output reg [7:0] Char_ciphertext
     ,output reg C_ready
-    ,output reg err_invalid_plaintext
+    ,output reg err_invalid_ptxt
 );
 //---------------------------------------------------------------------------
 // VARIABLES
@@ -50,7 +50,7 @@ always @ (*) begin
     else begin
         result = 8'b00000000;
         sub = 8'b00000000;
-        err_invalid_plaintext = 1'b1;
+        err_invalid_ptxt = 1'b1;
         Char_ciphertext = `NULL_CHAR;
         tmp_C_ready = 1'b0;
     end
@@ -59,17 +59,17 @@ end
 always @(posedge clk or negedge rst_n) begin
 	if(!rst_n) begin
 		C_ready <= 1'b0;
-        err_invalid_plaintext = 1'b0;
+        err_invalid_ptxt = 1'b0;
 		Char_ciphertext <= `NULL_CHAR;
 	end
     else begin
 		if(tmp_C_ready && !err_invalid_ptxt) begin
 			C_ready <= 1'b1;
-            err_invalid_plaintext = 1'b0;
+            err_invalid_ptxt = 1'b0;
 		end
 		else begin
 			C_ready <= 1'b0;
-            err_invalid_plaintext = 1'b0;
+            err_invalid_ptxt = 1'b0;
 			Char_ciphertext <= `NULL_CHAR;
 		end
 	end

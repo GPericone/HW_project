@@ -2,7 +2,7 @@
 // ---- Testbench for file encryption
 // -----------------------------------------------------------------------------
 
-module encryption;
+module encryption_tb_checks;
 
     reg clk = 1'b0;
     always #5 clk = !clk;
