@@ -28,12 +28,12 @@ reg [7:0] tmp_publicKey;
 // LOGIC DESIGN
 //---------------------------------------------------------------------------
 
-assign err_invalid_seckey = secret_key < 8'b00000001 || secret_key > {p_par - 8'b00000001};//p_par - 9'b000000001;
+assign err_invalid_seckey = Secret_key < 8'b00000001 || Secret_key > {p_par - 8'b00000001};//p_par - 9'b000000001;
 
 always @ (*) begin
 
     if(!err_invalid_seckey && mode == 2'b01) begin
-        sum = secret_key + q_par;
+        sum = Secret_key + q_par;
         if(sum >= 9'b000000001 && sum <={1'b0 , p_par}) begin
             result = sum;
             tmp_P_K_ready = 1'b1; 

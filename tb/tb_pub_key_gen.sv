@@ -31,7 +31,7 @@ module pub_key_gen_tb_checks;
     initial begin
         // Test iniziale, tutti i dati corretti
         @(posedge clk);
-        secret_key = 8'hc8; // 200
+        Secret_key = 8'hc8; // 200
 
         @(posedge clk);
         @(posedge clk);		
