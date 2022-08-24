@@ -14,7 +14,7 @@ module public_key_gen(
 // VARIABLES
 //---------------------------------------------------------------------------
 
-localparam p_par = 8'b11100011;//9'b011100011;/*227*/
+localparam p_par = 8'b11100011; /*227*/
 localparam p_max = 9'b111000011; /*451*/
 localparam q_par = 8'b11100001; /*225*/
 
@@ -28,7 +28,7 @@ reg [7:0] tmp_publicKey;
 // LOGIC DESIGN
 //---------------------------------------------------------------------------
 
-assign err_invalid_seckey = Secret_key < 8'b00000001 || Secret_key > p_par - 8'b00000001;//p_par - 9'b000000001;
+assign err_invalid_seckey = Secret_key < 8'b00000001 || Secret_key > p_par - 8'b00000001;
 
 always @ (*) begin
 
@@ -38,7 +38,7 @@ always @ (*) begin
             result = sum;
             tmp_P_K_ready = 1'b1; 
         end
-        else if(sum > 9'b000000001 && sum <= p_max) begin
+        else if(sum > {1'b0 , p_par} && sum <= p_max) begin
             result = sum - {1'b0 , p_par};
             tmp_P_K_ready = 1'b1;
         end
