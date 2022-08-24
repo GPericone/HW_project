@@ -47,7 +47,6 @@ always @ (*) begin
     else begin
         result = 9'b000000000;
         sum = 9'b000000000;
-        err_invalid_seckey= 1'b0;
         tmp_publicKey = `NULL_CHAR;
         tmp_P_K_ready = 1'b0;
     end
