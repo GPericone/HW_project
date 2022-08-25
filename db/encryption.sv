@@ -19,10 +19,9 @@ localparam LOWERCASE_A_CHAR = 8'h61;
 localparam LOWERCASE_Z_CHAR = 8'h7A;
 localparam p_par = 9'b011100011; /*227*/
 
-reg[8:0] sub;  // va da -227 a +256
+reg signed [8:0] sub;  // va da -227 a +256
 reg[7:0] result;
 reg[8:0] temporaneo;
-reg[8:0] negazione;
 reg tmp_C_ready;
 
 //---------------------------------------------------------------------------
@@ -34,27 +33,27 @@ assign err_invalid_ptxt =  (Plaintext < LOWERCASE_A_CHAR) ||
 always @ (*) begin
     if(!err_invalid_ptxt && mode == 2'b10) begin
         sub = Plaintext - Public_key;
-        if(sub >=9'b000011101  && sub < 9'b000000000) begin           //-227<= sub <0
-            negazione = ~sub;
-            temporaneo = p_par - (negazione[8:0] + 9'b000000001);
+        if (sub < 0)begin                            //-227<= sub <0
+            temporaneo = sub + p_par;
             result = temporaneo[7:0];
             tmp_C_ready = 1'b1;
         end
-        else if (sub >=9'b011100100 && sub <= 9'b011111111 ) begin     // 228<= sub <=256
-            temporaneo = sub - p_par;
-            result = temporaneo[7:0];
-            tmp_C_ready = 1'b1;
-        end
-        else if (sub >=9'b000000000 && sub <= 9'b011100011 ) begin     // 0 <= sub <= 227
+         else if (sub >= 9'd0 && sub <= 9'd227 ) begin     // 0 <= sub <= 227
             temporaneo = sub;
             result = temporaneo[7:0];
             tmp_C_ready = 1'b1;
         end
+        else if (sub >=9'd228 && sub <= 9'd256 ) begin     // 228<= sub <=256
+            temporaneo = sub - p_par;
+            result = temporaneo[7:0];
+            tmp_C_ready = 1'b1;
+        end
+       
     end
     else begin
-        result = 8'b00000000;
+        result = `NULL_CHAR;
         sub = 9'b000000000;
-        Char_ciphertext = `NULL_CHAR;
+        temporaneo = 9'b000000000 ;
         tmp_C_ready = 1'b0;
     end
 end

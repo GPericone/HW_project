@@ -36,7 +36,7 @@ module encryption_tb_checks;
         // Test iniziale, tutti i dati corretti
         @(posedge clk);
         Public_key = 8'hc8; // 200
-        Plaintext = 8'h7F; 
+        Plaintext = 8'h61;  //a
 
         @(posedge clk);
         @(posedge clk);		
