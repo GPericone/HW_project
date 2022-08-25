@@ -33,7 +33,7 @@ assign err_invalid_ptxt =  (Plaintext < LOWERCASE_A_CHAR) ||
 always @ (*) begin
     if(!err_invalid_ptxt && mode == 2'b10) begin
         sub = Plaintext - Public_key;
-        if (sub < 0)begin                            //-227<= sub <0
+        if (sub < 9'd0)begin                            //-227<= sub <0
             temporaneo = sub + p_par;
             result = temporaneo[7:0];
             tmp_C_ready = 1'b1;
@@ -43,7 +43,7 @@ always @ (*) begin
             result = temporaneo[7:0];
             tmp_C_ready = 1'b1;
         end
-        else if (sub >=9'd228) begin     // 228<= sub <=256
+        else begin     // 228<= sub <=256
             temporaneo = sub - p_par;
             result = temporaneo[7:0];
             tmp_C_ready = 1'b1;
