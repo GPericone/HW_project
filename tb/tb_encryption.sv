@@ -7,7 +7,7 @@ module encryption_tb_checks;
     reg clk = 1'b0;
     always #5 clk = !clk;
 
-    reg rst_n = 1'b0;
+    reg rst_n = 1'b1;
 
     localparam NUL_CHAR = 8'h00;
 
@@ -20,7 +20,7 @@ module encryption_tb_checks;
 
 
 
-    encryption sae_dec(
+    encryption enc(
      .clk                       (clk)
     ,.rst_n                     (rst_n)
     ,.mode                      (mode)
@@ -36,7 +36,7 @@ module encryption_tb_checks;
         // Test iniziale, tutti i dati corretti
         @(posedge clk);
         Public_key = 8'hc8; // 200
-        Plaintext = 8'h7F; // ciphertext di b
+        Plaintext = 8'h7F; 
 
         @(posedge clk);
         @(posedge clk);		

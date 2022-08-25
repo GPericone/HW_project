@@ -17,40 +17,43 @@ module encryption(
 
 localparam LOWERCASE_A_CHAR = 8'h61;
 localparam LOWERCASE_Z_CHAR = 8'h7A;
-localparam p_par = 8'b11100011; /*227*/
+localparam p_par = 9'b011100011; /*227*/
 
-wire err_invalid_ptxt;
-
-reg[7:0] sub;  // va da -227 a +256
+reg[8:0] sub;  // va da -227 a +256
 reg[7:0] result;
+reg[8:0] temporaneo;
+reg[8:0] negazione;
 reg tmp_C_ready;
 
 //---------------------------------------------------------------------------
 // LOGIC DESIGN
 //---------------------------------------------------------------------------
-assign err_invalid_ptxt =  (Plaintext >= LOWERCASE_A_CHAR) &&
-                            (Plaintext <= LOWERCASE_Z_CHAR);
+assign err_invalid_ptxt =  (Plaintext < LOWERCASE_A_CHAR) ||
+                            (Plaintext > LOWERCASE_Z_CHAR);
 
 always @ (*) begin
     if(!err_invalid_ptxt && mode == 2'b10) begin
         sub = Plaintext - Public_key;
-        if(sub >=8'b00011101  && sub < 8'b00000000) begin           //-227<= sub <0
-            result = sub + p_par;
+        if(sub >=9'b000011101  && sub < 9'b000000000) begin           //-227<= sub <0
+            negazione = ~sub;
+            temporaneo = p_par - (negazione[8:0] + 9'b000000001);
+            result = temporaneo[7:0];
             tmp_C_ready = 1'b1;
         end
-        else if (sub >=8'b11100100 && sub <= 8'b11111111 ) begin     // 228<= sub <=256
-            result = sub - p_par;
+        else if (sub >=9'b011100100 && sub <= 9'b011111111 ) begin     // 228<= sub <=256
+            temporaneo = sub - p_par;
+            result = temporaneo[7:0];
             tmp_C_ready = 1'b1;
         end
-        else if (sub >=8'b00000000 && sub <= 8'b11100011 ) begin     // 0 <= sub <= 227
-            result = sub;
+        else if (sub >=9'b000000000 && sub <= 9'b011100011 ) begin     // 0 <= sub <= 227
+            temporaneo = sub;
+            result = temporaneo[7:0];
             tmp_C_ready = 1'b1;
         end
     end
     else begin
         result = 8'b00000000;
-        sub = 8'b00000000;
-        err_invalid_ptxt = 1'b1;
+        sub = 9'b000000000;
         Char_ciphertext = `NULL_CHAR;
         tmp_C_ready = 1'b0;
     end
@@ -59,17 +62,16 @@ end
 always @(posedge clk or negedge rst_n) begin
 	if(!rst_n) begin
 		C_ready <= 1'b0;
-        err_invalid_ptxt = 1'b0;
 		Char_ciphertext <= `NULL_CHAR;
 	end
     else begin
 		if(tmp_C_ready && !err_invalid_ptxt) begin
 			C_ready <= 1'b1;
-            err_invalid_ptxt = 1'b0;
+            Char_ciphertext <= result; 
+           
 		end
 		else begin
-			C_ready <= 1'b0;
-            err_invalid_ptxt = 1'b0;
+			C_ready <= 1'b0;            
 			Char_ciphertext <= `NULL_CHAR;
 		end
 	end
