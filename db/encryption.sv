@@ -43,7 +43,7 @@ always @ (*) begin
             result = temporaneo[7:0];
             tmp_C_ready = 1'b1;
         end
-        else if (sub >=9'd228 && sub <= 9'd256 ) begin     // 228<= sub <=256
+        else if (sub >=9'd228) begin     // 228<= sub <=256
             temporaneo = sub - p_par;
             result = temporaneo[7:0];
             tmp_C_ready = 1'b1;
