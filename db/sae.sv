@@ -8,7 +8,7 @@ localparam P = 8'd227;
 module public_key_gen_mod(
      input  clk
     ,input rst_n 
-    ,input  [1:0] mode   // 2'b01 è la modalità per decifrare
+    ,input  selection   // 2'b01 è la modalità per decifrare
     ,input  [7:0] secret_key
     ,output reg [7:0] public_key
     ,output reg output_ready
@@ -34,7 +34,7 @@ reg [7:0] tmp_public_key;
 
 always @ (*) begin
 
-    if(/*!err_invalid_seckey && */ mode == 2'b01) begin
+    if(/*!err_invalid_seckey && */ selection) begin
         sum = secret_key + Q;
         if(sum >= 9'b000000001 && sum <= P) begin
             result = sum;
@@ -76,7 +76,7 @@ endmodule
 module encryption_mod(
      input  clk
     ,input rst_n 
-    ,input  [1:0] mode   // 2'b10 è la modalità per cifrare
+    ,input  selection   // 2'b10 è la modalità per cifrare
     ,input  [7:0] plaintext
     ,input  [7:0] public_key
     ,output reg [7:0] ciphertext
@@ -98,7 +98,7 @@ reg tmp_output_ready;
 // assign err_invalid_ptxt_char =  (plaintext < LOWERCASE_A_CHAR) || (plaintext > LOWERCASE_Z_CHAR);
 
 always @ (*) begin
-    if(/*!err_invalid_ptxt_char && */ mode == 2'b10) begin
+    if(/*!err_invalid_ptxt_char && */ selection) begin
         sub = plaintext - public_key;
         if (sub < 9'd0)begin                            //-227<= sub <0
             result = sub + P;
@@ -148,7 +148,7 @@ endmodule
 module decryption_mod (
      input clk
     ,input rst_n
-    ,input [1:0] mode // 2'b11 è la modalità per decifrare
+    ,input selection // 2'b11 è la modalità per decifrare
     ,input [7:0] ciphertext
     ,input [7:0] secret_key
     ,output reg [7:0] plaintext
@@ -193,7 +193,7 @@ end
 // SOLUZIONE CON SOTTRAZIONE PER IL MODULO
 always @ (*) begin
 
-    if(/* !err_invalid_seckey  && */ mode == 2'b11) begin
+    if(/* !err_invalid_seckey  && */ selection) begin
 
         sum = ciphertext + secret_key + Q;
 
@@ -266,23 +266,26 @@ module sae (
     ,output err_invalid_ptxt_char
     ,output err_invalid_seckey
     ,output err_invalid_ctxt_char
-)
+);
 
 
-reg [7:0] = data;
-reg [7:0] = key;
-wire [7:0]secret_key;
-wire [7:0]public_key;
-wire pkg_ready;
-wire enc_ready;
-wire dec_ready;
-wire [7:0] ciphertext;
-wire [7:0] plaintext;
+reg [7:0] data;
+reg [7:0] key;
+reg [7:0]secret_key;
+reg [7:0]public_key;
+reg pkg_sel;
+reg pkg_ready;
+reg enc_sel;
+reg enc_ready;
+reg dec_sel;
+reg dec_ready;
+reg [7:0] ciphertext;
+reg [7:0] plaintext;
 
 public_key_gen_mod public_key_gen (
     .clk                    (clk)
     ,.rst_n                 (rst_n)
-    ,.mode                  (mode)
+    ,.pkg_sel               (selection)
     ,.secret_key            (secret_key)
     ,.data_output           (public_key)
     ,.pkg_ready             (output_ready)
@@ -291,7 +294,7 @@ public_key_gen_mod public_key_gen (
 encryption_mod encryption(
     .clk                    (clk)
     ,.rst_n                 (rst_n)
-    ,.mode                  (mode)
+    ,.enc_sel               (selection)
     ,.plaintext             (plaintext)
     ,.public_key            (public_key)
     ,.data_output           (ciphertext)
@@ -301,7 +304,7 @@ encryption_mod encryption(
 decryption_mod decryption(
     .clk                    (clk)
     ,.rst_n                 (rst_n)
-    ,.mode                  (mode)
+    ,.dec_sel               (selection)
     ,.ciphertext            (ciphertext)
     ,.secret_key            (secret_key)
     ,.data_output           (plaintext)
@@ -309,24 +312,64 @@ decryption_mod decryption(
     ,.err_invalid_ctxt_char (err_invalid_ctxt_char)
 );
 
-assign err_invalid_seckey = secret_key < 1 || secret_key > P - 1;
-assign err_invalid_ptxt_char =  (plaintext < LOWERCASE_A_CHAR) || (plaintext > LOWERCASE_Z_CHAR);
+assign err_invalid_seckey = (mode[0] == 1'b1) && (key < 1 || key > P - 1);
+assign err_invalid_ptxt_char = (mode == 2'b10) && (data < LOWERCASE_A_CHAR || data > LOWERCASE_Z_CHAR);
 
 always @(*) begin
-    if(err_invalid_seckey || err_invalid_ptxt_char) begin
-        mode = 2'b00;
+    if(!err_invalid_seckey && !err_invalid_ptxt_char) begin
+        case(mode)
+        2'b01: begin
+            ciphertext = `NULL_CHAR;
+            plaintext = `NULL_CHAR;
+            secret_key = key; 
+            public_key = `NULL_CHAR;
+            pkg_sel = 1'b1; 
+            enc_sel = 1'b0; 
+            dec_sel = 1'b0; 
+            output_ready = pkg_ready; 
+            end
+        2'b10: begin 
+            ciphertext = `NULL_CHAR;
+            plaintext = data;
+            secret_key = `NULL_CHAR;
+            public_key = key; 
+            pkg_sel = 1'b0; 
+            enc_sel = 1'b1; 
+            dec_sel = 1'b0;         
+            output_ready = enc_ready; 
+            end
+        2'b11: begin 
+            ciphertext = data; 
+            plaintext = `NULL_CHAR;
+            secret_key = key; 
+            public_key = `NULL_CHAR;
+            pkg_sel = 1'b0; 
+            enc_sel = 1'b0; 
+            dec_sel = 1'b1;         
+            output_ready = dec_ready; 
+            end
+        default: begin 
+            ciphertext = `NULL_CHAR;
+            plaintext = `NULL_CHAR;
+            secret_key = `NULL_CHAR;
+            public_key = `NULL_CHAR;
+            pkg_sel = 1'b0; 
+            enc_sel = 1'b0; 
+            dec_sel = 1'b0;
+            output_ready = 1'b0;
+            end
+        endcase
     end
-    case(mode)
-    2'b01: begin secret_key = key; output_ready = pkg_ready; end
-    2'b10: begin plaintext = data; public_key = key; output_ready = enc_ready; end
-    2'b11: begin ciphertext = data; secret_key = key; output_ready = dec_ready; end
-    default: begin 
+    else begin
         ciphertext = `NULL_CHAR;
         plaintext = `NULL_CHAR;
         secret_key = `NULL_CHAR;
         public_key = `NULL_CHAR;
-        end
-    endcase
+        pkg_sel = 1'b0; 
+        enc_sel = 1'b0; 
+        dec_sel = 1'b0;
+        output_ready = 1'b0;
+    end
 end
 
 always @(posedge clk or negedge rst_n) begin
