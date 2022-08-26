@@ -317,9 +317,9 @@ always @(*) begin
         mode = 2'b00;
     end
     case(mode)
-    2'b01: begin secret_key = key; output_ready = pkg_ready end
-    2'b10: begin plaintext = data; public_key = key; output_ready = enc_ready end
-    2'b11: begin ciphertext = data; secret_key = key; output_ready = dec_ready end
+    2'b01: begin secret_key = key; output_ready = pkg_ready; end
+    2'b10: begin plaintext = data; public_key = key; output_ready = enc_ready; end
+    2'b11: begin ciphertext = data; secret_key = key; output_ready = dec_ready; end
     default: begin 
         ciphertext = `NULL_CHAR;
         plaintext = `NULL_CHAR;
