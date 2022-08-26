@@ -239,7 +239,7 @@ always @(posedge clk or negedge rst_n) begin
 		plaintext <= `NULL_CHAR;
 	end
     else begin
-		if(tmp_output_ready && /*!err_invalid_seckey */) begin
+		if(tmp_output_ready /* && !err_invalid_seckey */) begin
 			output_ready <= 1'b1;
 			plaintext <= tmp_plaintext;
 		end
