@@ -262,7 +262,7 @@ module sae (
     ,input [7:0] key_input
     ,output [7:0] data_output
     ,input inputs_valid
-    ,output output_ready
+    ,output reg output_ready
     ,output err_invalid_ptxt_char
     ,output err_invalid_seckey
     ,output err_invalid_ctxt_char
@@ -273,12 +273,12 @@ reg [7:0] data;
 reg [7:0] key;
 reg [7:0]secret_key;
 reg [7:0]public_key;
-reg pkg_sel;
-reg pkg_ready;
-reg enc_sel;
-reg enc_ready;
-reg dec_sel;
-reg dec_ready;
+reg pkg_sel = 1'b0;
+reg pkg_ready = 1'b0;
+reg enc_sel = 1'b0;
+reg enc_ready = 1'b0;
+reg dec_sel = 1'b0;
+reg dec_ready = 1'b0;
 reg [7:0] ciphertext;
 reg [7:0] plaintext;
 
