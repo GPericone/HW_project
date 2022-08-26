@@ -44,12 +44,12 @@ always @ (*) begin
             result = sum - P;
             tmp_output_ready = 1'b1;
         end
-        tmp_publicKey = result[7:0];
+        tmp_public_key = result[7:0];
     end
     else begin
         result = 9'h0;
         sum = 9'h0;
-        tmp_publicKey = `NULL_CHAR;
+        tmp_public_key = `NULL_CHAR;
         tmp_output_ready = 1'b0;
     end
 end
@@ -62,7 +62,7 @@ always @(posedge clk or negedge rst_n) begin
     else begin
 		if(tmp_output_ready /* && !err_invalid_seckey */) begin
 			output_ready <= 1'b1;
-			public_key <= tmp_publicKey;
+			public_key <= tmp_public_key;
 		end
 		else begin
 			output_ready <= 1'b0;
@@ -193,7 +193,7 @@ end
 // SOLUZIONE CON SOTTRAZIONE PER IL MODULO
 always @ (*) begin
 
-    if(/* !err_invalid_seckey */ && mode == 2'b11) begin
+    if(/* !err_invalid_seckey  && */ mode == 2'b11) begin
 
         sum = ciphertext + secret_key + Q;
 
@@ -331,7 +331,7 @@ end
 
 always @(posedge clk or negedge rst_n) begin
 	if(!rst_n) begin
-		data <= `NULL_CHAR ;
+		data <= `NULL_CHAR;
 		key <= `NULL_CHAR;
 	end
     else begin
