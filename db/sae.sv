@@ -316,7 +316,7 @@ assign err_invalid_seckey = (mode[0] == 1'b1) && (key < 1 || key > P - 1);
 assign err_invalid_ptxt_char = (mode == 2'b10) && (data < LOWERCASE_A_CHAR || data > LOWERCASE_Z_CHAR);
 
 always @(*) begin
-    if(!err_invalid_seckey && !err_invalid_ptxt_char) begin
+    if(!err_invalid_seckey && !err_invalid_ptxt_char && !inputs_valid) begin
         case(mode)
         2'b01: begin
             ciphertext = `NULL_CHAR;
@@ -372,12 +372,20 @@ always @(*) begin
     end
 end
 
+always @(mode) begin
+    output_ready <= 1'b0;
+end
+
 always @(posedge clk or negedge rst_n) begin
 	if(!rst_n) begin
 		data <= `NULL_CHAR;
 		key <= `NULL_CHAR;
 	end
     else begin
+<<<<<<< Updated upstream
+=======
+        in_valid <= inputs_valid;
+>>>>>>> Stashed changes
 		if(inputs_valid) begin
 			data <= data_input;
 			key <= key_input;
@@ -386,7 +394,29 @@ always @(posedge clk or negedge rst_n) begin
 			data <= `NULL_CHAR;
 			key <= `NULL_CHAR;
 		end
+<<<<<<< Updated upstream
 	end
+=======
+        case(mode)
+        2'b01: begin
+            output_ready <= pkg_ready;
+            data_output <= pkg_output;
+        end
+        2'b10: begin
+            output_ready <= enc_ready;
+            data_output <= enc_output;
+        end
+        2'b11: begin
+            output_ready <= dec_ready;
+            data_output <= dec_output;
+        end
+        default: begin
+            output_ready <= 1'b0;
+            data_output <= `NULL_CHAR;
+        end
+        endcase
+        end
+>>>>>>> Stashed changes
 end
 
 endmodule
