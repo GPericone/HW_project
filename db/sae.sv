@@ -395,7 +395,7 @@ always @(posedge clk or negedge rst_n) begin
         in_valid <= 1'b0;
 	end
     else begin
-        if(!err_invalid_seckey && !err_invalid_ptxt_char && !inputs_valid) begin
+        if(!err_invalid_seckey && !err_invalid_ptxt_char) begin
             in_valid <= inputs_valid;
         end
         else begin
