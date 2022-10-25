@@ -229,7 +229,8 @@ module sae (
     ,output err_invalid_seckey      // The output bit indicating that the secret key is invalid
     ,output err_invalid_ctxt_char   // The output bit indicating that the ciphertext is invalid
 );
-
+// Support variable that samples the value of mode, allows to avoid errors due to timing conditions of output_ready
+reg [1:0] mode_sampled;
 // Support variable that samples the value of inputs_valid, allows to avoid errors due to timing and input variations
 reg in_valid;
 // Register in which the value of data_input is sampled
@@ -366,16 +367,10 @@ always @(*) begin
     end
 end
 
-/*
-This block always allows you to reset output_ready to 0 when the mode changes (we have a new input)
-*/
-always @(mode) begin
-    output_ready <= 1'b0;
-end
-
 // This is the always block that allows the input and output values to be sampled at each clock
 always @(posedge clk or negedge rst_n) begin
 	if(!rst_n) begin
+        mode_sampled <= 2'b00;
 		data <= `NULL_CHAR;
 		key <= `NULL_CHAR;
         in_valid <= 1'b0;
@@ -396,22 +391,39 @@ always @(posedge clk or negedge rst_n) begin
 		if(inputs_valid) begin
 			data <= data_input;
 			key <= key_input;
+            mode_sampled <= mode;
 		end
 		else begin
 			data <= data;
 			key <= key;
+            mode_sampled <= mode_sampled;
 		end
         case(mode)
         2'b01: begin
-            output_ready <= pkg_ready;
+            if(mode_sampled == mode) begin
+                output_ready <= pkg_ready;           
+            end
+            else begin
+                output_ready <= 1'b0;
+            end
             data_output <= pkg_output;
         end
         2'b10: begin
-            output_ready <= enc_ready;
+            if(mode_sampled == mode) begin
+                output_ready <= enc_ready;           
+            end
+            else begin
+                output_ready <= 1'b0;
+            end
             data_output <= enc_output;
         end
         2'b11: begin
-            output_ready <= dec_ready;
+            if(mode_sampled == mode) begin
+                output_ready <= dec_ready;           
+            end
+            else begin
+                output_ready <= 1'b0;
+            end
             data_output <= dec_output;
         end
         default: begin
