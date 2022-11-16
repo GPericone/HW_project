@@ -60,13 +60,20 @@ module sae_tb_checks;
         @(posedge rst_n);
     
         @(posedge clk);
-        FILE = $open("tv/privatekey_w.txt", "r");
+        FILE = $fopen("tv/privatekey_w.txt", "r");
         if (FILE)  
             $display("File was opened successfully : %0d", FILE);
         else    
             $display("File was NOT opened successfully : %0d", FILE);
-        $fgets(key_input_w, FILE);
+        $fscanf(FILE, "%h", key_input_w);
         $write("Private key loaded");
+        mode_w = 2'b01;
+        data_input_w = 8'd0;
+        inputs_valid_w = 1'b1;
+        @(posedge clk);
+        inputs_valid_w = 1'b0;
+        @(posedge clk);
+        #3 $display("PUBLIC KEY: %d - SECRET KEY: %d - OUTPUT_READY: %b - ERROR: %b", data_output_w, key_input_w, output_ready_w, err_invalid_seckey_w);
     end
 
 endmodule
