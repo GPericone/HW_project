@@ -55,25 +55,91 @@ module sae_tb_checks;
     );
 
     int FILE;
+    reg [7:0] PTXT_W [$];
+    reg [7:0] CTXT_W [$];
+    string char;
 
 	initial begin
         @(posedge rst_n);
     
+        // Walt generates the public key and sends to Jesse
         @(posedge clk);
-        FILE = $fopen("tv/privatekey_w.txt", "r");
+        FILE = $fopen("tv/privatekey_w.txt", "rb");
         if (FILE)  
             $display("File was opened successfully : %0d", FILE);
         else    
             $display("File was NOT opened successfully : %0d", FILE);
-        $fscanf(FILE, "%h", key_input_w);
-        $write("Private key loaded");
+        $fscanf(FILE, "%b", key_input_w);
+        $display("Private key loaded");
+        $fclose(FILE);
         mode_w = 2'b01;
         data_input_w = 8'd0;
         inputs_valid_w = 1'b1;
         @(posedge clk);
         inputs_valid_w = 1'b0;
         @(posedge clk);
-        #3 $display("PUBLIC KEY: %d - SECRET KEY: %d - OUTPUT_READY: %b - ERROR: %b", data_output_w, key_input_w, output_ready_w, err_invalid_seckey_w);
-    end
+        #3 if (output_ready_w == 1'b1) begin
+            FILE = $fopen("tv/publickey_j.txt", "wb");
+            $fwrite(FILE, "%b", data_output_w);
+            $fclose(FILE);
+        end
+        else
+            $write("Output non ready yet");
 
+        // Jesse generates the public key and sends to Walt
+
+        FILE = $fopen("tv/privatekey_j.txt", "rb");
+        if (FILE)  
+            $display("File was opened successfully : %0d", FILE);
+        else    
+            $display("File was NOT opened successfully : %0d", FILE);
+        $fscanf(FILE, "%b", key_input_j);
+        $display("Private key loaded");
+        $fclose(FILE);
+        mode_j = 2'b01;
+        data_input_j = 8'd0;
+        inputs_valid_j = 1'b1;
+        @(posedge clk);
+        inputs_valid_j = 1'b0;
+        @(posedge clk);
+        #3 if (output_ready_j == 1'b1) begin
+            FILE = $fopen("tv/publickey_w.txt", "wb");
+            $fwrite(FILE, "%b", data_output_j);
+            $fclose(FILE);
+        end
+        else
+            $write("Output non ready yet");
+
+        // Walt encrypt the plaintext with the Jesse's public key
+
+        FILE = $fopen("tv/publickey_w.txt", "rb");
+        if (FILE)  
+            $display("File was opened successfully : %0d", FILE);
+        else    
+            $display("File was NOT opened successfully : %0d", FILE);
+        $fscanf(FILE, "%b", key_input_w);
+        $display("Public key loaded");
+        $fclose(FILE);
+        FILE = $fopen("tv/plaintext_w.txt", "r");
+        while($fscanf(FILE, "%c", char) == 1) begin
+            data_input_w = int'(char);
+            mode_w = 2'b10;
+            inputs_valid_w = 1'b1;
+            @(posedge clk);
+            inputs_valid_w = 1'b0;
+            @(posedge clk);
+        // CONTROLLO CHE NON CI SIANO ERRORI
+            #3 if (output_ready_w == 1'b1)
+                CTXT_W.push_back(data_output_w);
+            else
+               $write("Output non ready yet"); 
+        end
+        $fclose(FILE);
+
+        FILE = $fopen("tv/ciphertext_j.txt", "w");
+        foreach(CTXT_W[i])
+            $fwrite(FILE, "%c", CTXT_W[i]);
+        $fclose(FILE);
+
+    end
 endmodule
