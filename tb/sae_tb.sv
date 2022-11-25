@@ -57,7 +57,12 @@ module sae_tb_checks;
     int FILE;
     reg [7:0] PTXT_W [$];
     reg [7:0] CTXT_W [$];
-    string char;
+    reg [7:0] PTXT_J [$];
+    reg [7:0] CTXT_J [$];
+    string char_w;
+    string char_w2;
+    string char_j;
+    string char_j2;
 
 	initial begin
         @(posedge rst_n);
@@ -86,6 +91,9 @@ module sae_tb_checks;
         else
             $write("Output non ready yet");
 
+        mode_w = 2'b00;
+        @(posedge clk);
+
         // Jesse generates the public key and sends to Walt
 
         FILE = $fopen("tv/privatekey_j.txt", "rb");
@@ -110,6 +118,9 @@ module sae_tb_checks;
         else
             $write("Output non ready yet");
 
+        mode_j = 2'b00;
+        @(posedge clk);
+
         // Walt encrypt the plaintext with the Jesse's public key
 
         FILE = $fopen("tv/publickey_w.txt", "rb");
@@ -121,8 +132,8 @@ module sae_tb_checks;
         $display("Public key loaded");
         $fclose(FILE);
         FILE = $fopen("tv/plaintext_w.txt", "r");
-        while($fscanf(FILE, "%c", char) == 1) begin
-            data_input_w = int'(char);
+        while($fscanf(FILE, "%c", char_w) == 1) begin
+            data_input_w = int'(char_w);
             mode_w = 2'b10;
             inputs_valid_w = 1'b1;
             @(posedge clk);
@@ -141,5 +152,66 @@ module sae_tb_checks;
             $fwrite(FILE, "%c", CTXT_W[i]);
         $fclose(FILE);
 
+        mode_w = 2'b00;
+        @(posedge clk);
+
+        // Jesse decrypt the cyphertext
+        FILE = $fopen("tv/privatekey_j.txt", "rb");
+        if (FILE)  
+            $display("File was opened successfully : %0d", FILE);
+        else    
+            $display("File was NOT opened successfully : %0d", FILE);
+        $fscanf(FILE, "%b", key_input_j);
+        $display("Public key loaded");
+        $fclose(FILE);
+        FILE = $fopen("tv/ciphertext_j.txt", "r");
+        if (FILE)  
+            $display("File was opened successfully : %0d", FILE);
+        else    
+            $display("File was NOT opened successfully : %0d", FILE);
+        while($fscanf(FILE, "%c", char_j) == 1) begin
+            data_input_j = int'(char_j);
+            mode_j = 2'b11;
+            inputs_valid_j = 1'b1;
+            @(posedge clk);
+            inputs_valid_j = 1'b0;
+            @(posedge clk);
+        // CONTROLLO CHE NON CI SIANO ERRORI
+            #3 if (output_ready_j == 1'b1)
+                PTXT_J.push_back(data_output_j);
+            else
+               $write("Output non ready yet"); 
+        end
+        $fclose(FILE);
+
+        FILE = $fopen("tv/plaintext_j.txt", "w");
+        foreach(PTXT_J[i])
+            $fwrite(FILE, "%c", PTXT_J[i]);
+        $fclose(FILE);
+
+        PTXT_J.delete();
+
+        mode_j = 2'b00;
+        @(posedge clk);
+
+        // Controllo che il ciphertext decifrato sia uguale al plaintext iniziale
+
+        FILE = $fopen("tv/plaintext_w.txt", "r");
+        while($fscanf(FILE, "%c", char_w2) == 1) begin
+            PTXT_W.push_back(int'(char_w2));
+        end
+        $fclose(FILE);
+        FILE = $fopen("tv/plaintext_j.txt", "r");
+        while($fscanf(FILE, "%c", char_j2) == 1) begin
+            PTXT_J.push_back(int'(char_j2));
+        end
+        $fclose(FILE);
+        foreach(PTXT_W[i])
+            if(PTXT_J[i] != PTXT_W[i])
+                $display("I plaintext non coincidono: %c %c", PTXT_J[i], PTXT_W[i]);
+        $display("I plaintext coincidono");
+
+        if(PTXT_J == PTXT_W)
+            $display("I plaintext coincidono");
     end
 endmodule
