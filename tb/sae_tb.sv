@@ -6,6 +6,11 @@ module sae_tb_checks;
     reg rst_n = 1'b0;
     initial #12.8 rst_n = 1'b1;
 
+    /*
+    We define two instances to test the functionality of the SAE module, as stated in the specification. 
+    We refer to the figure in the specification and create one instance of the module for Walt and one for Jesse.
+    */
+
     reg [1:0] mode_w;
     reg [7:0] data_input_w;
     reg [7:0] key_input_w;
@@ -54,7 +59,8 @@ module sae_tb_checks;
     ,.err_invalid_ctxt_char     (err_invalid_ctxt_char_j)
     );
 
-    int FILE;
+
+    int FILE; 
     reg [7:0] PTXT_W [$];
     reg [7:0] CTXT_W [$];
     reg [7:0] PTXT_J [$];
@@ -67,7 +73,10 @@ module sae_tb_checks;
 	initial begin
         @(posedge rst_n);
     
-        // Walt generates the public key and sends to Jesse
+        //-------------------------------------------------------------------
+        // WALT GENERATES THE PUBLIC KEY
+        //-------------------------------------------------------------------
+        
         @(posedge clk);
         FILE = $fopen("tv/privatekey_w.txt", "rb");
         if (FILE)  
@@ -94,7 +103,9 @@ module sae_tb_checks;
         mode_w = 2'b00;
         @(posedge clk);
 
-        // Jesse generates the public key and sends to Walt
+        //-------------------------------------------------------------------
+        // JESSE GENERATES THE PUBLIC KEY
+        //-------------------------------------------------------------------
 
         FILE = $fopen("tv/privatekey_j.txt", "rb");
         if (FILE)  
@@ -121,7 +132,9 @@ module sae_tb_checks;
         mode_j = 2'b00;
         @(posedge clk);
 
-        // Walt encrypt the plaintext with the Jesse's public key
+        //-------------------------------------------------------------------
+        // WALT ENCRYPTS THE PLAINTEXT
+        //-------------------------------------------------------------------
 
         FILE = $fopen("tv/publickey_w.txt", "rb");
         if (FILE)  
@@ -155,7 +168,10 @@ module sae_tb_checks;
         mode_w = 2'b00;
         @(posedge clk);
 
-        // Jesse decrypt the cyphertext
+        //-------------------------------------------------------------------
+        // JESSE DECRYPTS THE CIPHERTEXT
+        //-------------------------------------------------------------------
+
         FILE = $fopen("tv/privatekey_j.txt", "rb");
         if (FILE)  
             $display("File was opened successfully : %0d", FILE);
@@ -194,7 +210,9 @@ module sae_tb_checks;
         mode_j = 2'b00;
         @(posedge clk);
 
-        // Controllo che il ciphertext decifrato sia uguale al plaintext iniziale
+        //-------------------------------------------------------------------
+        // I CHECK THAT THE ORIGINAL PLAINTEXT AND THE PLAINTEXT OBTAINED BY DECRYPTION MATCH
+        //-------------------------------------------------------------------
 
         FILE = $fopen("tv/plaintext_w.txt", "r");
         while($fscanf(FILE, "%c", char_w2) == 1) begin
