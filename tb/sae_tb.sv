@@ -80,25 +80,42 @@ module sae_tb_checks;
         @(posedge clk);
         FILE = $fopen("tv/privatekey_w.txt", "rb");
         if (FILE)  
-            $display("File was opened successfully : %0d", FILE);
-        else    
-            $display("File was NOT opened successfully : %0d", FILE);
-        $fscanf(FILE, "%b", key_input_w);
-        $display("Private key loaded");
+            $display("File privatekey_w was opened successfully : %0d", FILE);
+        else begin 
+            $display("File privatekey_w was NOT opened successfully : %0d", FILE);
+            $finish;
+        end
+        if($fscanf(FILE, "%b", key_input_w) == 1)
+            $display("Walt's private key was successfully loaded");
+        else begin
+            $display("Walt's private key was NOT loaded correctly");
+            $finish;
+        end
         $fclose(FILE);
+
         mode_w = 2'b01;
         data_input_w = 8'd0;
         inputs_valid_w = 1'b1;
         @(posedge clk);
         inputs_valid_w = 1'b0;
         @(posedge clk);
-        #3 if (output_ready_w == 1'b1) begin
-            FILE = $fopen("tv/publickey_j.txt", "wb");
-            $fwrite(FILE, "%b", data_output_w);
-            $fclose(FILE);
+        #3 while (output_ready_w != 1'b1)
+            $display("Walt's public key is NOT yet ready");
+        $display("Walt's public key was generated");
+        FILE = $fopen("tv/publickey_j.txt", "wb");
+        if (FILE)  
+            $display("File publickey_j was opened successfully : %0d", FILE);
+        else begin 
+            $display("File publickey_j was NOT opened successfully : %0d", FILE);
+            $finish;
         end
-        else
-            $write("Output non ready yet");
+        if($fwrite(FILE, "%b", data_output_w) == 1)
+            $display("Walt's public key was saved correctly");
+        else begin
+            $display("Walt's public key was NOT saved correctly");
+            $finish;
+        end
+        $fclose(FILE);
 
         mode_w = 2'b00;
         @(posedge clk);
@@ -109,25 +126,42 @@ module sae_tb_checks;
 
         FILE = $fopen("tv/privatekey_j.txt", "rb");
         if (FILE)  
-            $display("File was opened successfully : %0d", FILE);
-        else    
-            $display("File was NOT opened successfully : %0d", FILE);
-        $fscanf(FILE, "%b", key_input_j);
-        $display("Private key loaded");
+            $display("File privatekey_j was opened successfully : %0d", FILE);
+        else  begin
+            $display("File privatekey_j was NOT opened successfully : %0d", FILE);
+            $finish;
+        end  
+        if($fscanf(FILE, "%b", key_input_j) == 1)
+            $display("Jesse's private key was successfully loaded");
+        else begin
+            $display("Jesse's private key was NOT loaded correctly");
+            $finish;
+        end
         $fclose(FILE);
+
         mode_j = 2'b01;
         data_input_j = 8'd0;
         inputs_valid_j = 1'b1;
         @(posedge clk);
         inputs_valid_j = 1'b0;
         @(posedge clk);
-        #3 if (output_ready_j == 1'b1) begin
-            FILE = $fopen("tv/publickey_w.txt", "wb");
-            $fwrite(FILE, "%b", data_output_j);
-            $fclose(FILE);
+        #3 while (output_ready_j != 1'b1)
+            $display("Jesse's public key is NOT yet ready");
+        $display("Jesse's public key was generated");
+        FILE = $fopen("tv/publickey_w.txt", "wb");
+        if (FILE)  
+            $display("File publickey_w was opened successfully : %0d", FILE);
+        else begin
+            $display("File publickey_w was NOT opened successfully : %0d", FILE);
+            $finish;
+        end 
+        if($fwrite(FILE, "%b", data_output_j) == 1)
+            $display("Jesse's public key was saved correctly");
+        else begin
+            $display("Jesse's public key was NOT saved correctly");
+            $finish;
         end
-        else
-            $write("Output non ready yet");
+         $fclose(FILE);
 
         mode_j = 2'b00;
         @(posedge clk);
