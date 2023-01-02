@@ -8,9 +8,7 @@ localparam P = 8'd227;
 
 // The submodule that performs the operation of key-pair generation (mode = 2'b01)
 module public_key_gen_mod(
-     input  clk
-    ,input  rst_n 
-    ,input  selection               // Control variable that activates the circuit
+     input  selection               // Control variable that activates the circuit
     ,input  [7:0] secret_key        // The secret key that is used as input to calculate the public key
     ,output reg [7:0] public_key    // The public key calculated as Pk = (Sk+q) modp
     ,output reg pkg_ready           // The output bit indicating when the output (the public key) is ready
@@ -69,9 +67,7 @@ endmodule
 
 // The submodule that performs the operation of encryption (mode = 2'b10)
 module encryption_mod(
-     input  clk
-    ,input rst_n 
-    ,input  selection               // Control variable that activates the circuit
+     input  selection               // Control variable that activates the circuit
     ,input  [7:0] plaintext         // The plaintext input we want to encrypt
     ,input  [7:0] public_key        // The public key that we will use to encrypt the plaintext
     ,output reg [7:0] ciphertext    // The output ciphertext calculated as C[i] = (P[i] - Pk) modp
@@ -133,9 +129,7 @@ endmodule
 
 // The submodule that performs the operation of decryption (mode = 2'b11)
 module decryption_mod (
-     input clk
-    ,input rst_n
-    ,input selection            // Control variable that activates the circuit
+     input selection            // Control variable that activates the circuit
     ,input [7:0] ciphertext     // The ciphertext input we want to decrypt
     ,input [7:0] secret_key     // The public key that we will use to decrypt the ciphertext
     ,output reg [7:0] plaintext // The output plaintext calculated as P[i] = (C[i] + Sk + Q) modp
@@ -267,18 +261,14 @@ reg [7:0] ciphertext;
 reg [7:0] plaintext;
 
 public_key_gen_mod public_key_gen (
-    .clk                    (clk)
-    ,.rst_n                 (rst_n)
-    ,.selection             (pkg_sel)
+    .selection             (pkg_sel)
     ,.secret_key            (secret_key)
     ,.public_key            (pkg_output)
     ,.pkg_ready             (pkg_ready)
 );
 
 encryption_mod encryption(
-    .clk                    (clk)
-    ,.rst_n                 (rst_n)
-    ,.selection             (enc_sel)
+    .selection             (enc_sel)
     ,.plaintext             (plaintext)
     ,.public_key            (public_key)
     ,.ciphertext            (enc_output)
@@ -286,9 +276,7 @@ encryption_mod encryption(
 );
 
 decryption_mod decryption(
-    .clk                    (clk)
-    ,.rst_n                 (rst_n)
-    ,.selection             (dec_sel)
+    .selection             (dec_sel)
     ,.ciphertext            (ciphertext)
     ,.secret_key            (secret_key)
     ,.plaintext             (dec_output)
