@@ -102,6 +102,10 @@ module sae_tb_checks;
         inputs_valid_w = 1'b0;
         @(posedge clk);
         #3 while (output_ready_w != 1'b1) begin
+            if(err_invalid_seckey_w == 1'b1) begin
+                $display("Walt's secret key has an invalid value");
+                $finish;
+            end
             $display("Walt's public key is NOT yet ready");
         end
         $display("Walt's public key was generated");
@@ -128,7 +132,7 @@ module sae_tb_checks;
         if (FILE) begin
             $display("File privatekey_j was opened successfully : %0d", FILE);
         end
-        else  begin
+        else begin
             $display("File privatekey_j was NOT opened successfully : %0d", FILE);
             $finish;
         end  
@@ -148,6 +152,10 @@ module sae_tb_checks;
         inputs_valid_j = 1'b0;
         @(posedge clk);
         #3 while (output_ready_j != 1'b1) begin
+            if(err_invalid_seckey_j == 1'b1) begin
+                $display("Jesse's secret key has an invalid value");
+                $finish;
+            end
             $display("Jesse's public key is NOT yet ready");
         end
         $display("Jesse's public key was generated");
@@ -175,11 +183,25 @@ module sae_tb_checks;
         end
         else begin
             $display("File publickey_w was NOT opened successfully : %0d", FILE);
+            $finish;
         end
-        $fscanf(FILE, "%b", key_input_w);
-        $display("Public key loaded");
+        if($fscanf(FILE, "%b", key_input_w) == 1) begin
+            $display("Jesse's public key was successfully loaded");
+        end
+        else begin
+            $display("Jesse's public key was NOT loaded correctly");
+            $finish;
+        end
         $fclose(FILE);
+
         FILE = $fopen("tv/plaintext_w.txt", "r");
+        if (FILE)  begin
+            $display("File plaintext_w was opened successfully : %0d", FILE);
+        end
+        else begin
+            $display("File plaintext_w was NOT opened successfully : %0d", FILE);
+            $finish;
+        end
         while($fscanf(FILE, "%c", char_w) == 1) begin
             data_input_w = int'(char_w);
             mode_w = 2'b10;
@@ -187,17 +209,27 @@ module sae_tb_checks;
             @(posedge clk);
             inputs_valid_w = 1'b0;
             @(posedge clk);
-        // CONTROLLO CHE NON CI SIANO ERRORI
-            #3 if (output_ready_w == 1'b1)
-                CTXT_W.push_back(data_output_w);
-            else
-               $write("Output non ready yet"); 
+            #3 while(output_ready_w != 1'b1) begin
+                if(err_invalid_ptxt_char_w == 1'b1) begin
+                    $display("An invalid character was inserted in the plaintext");
+                    $finish;
+                end
+            end
+            CTXT_W.push_back(data_output_w);
         end
         $fclose(FILE);
 
         FILE = $fopen("tv/ciphertext_j.txt", "w");
+        if (FILE) begin
+            $display("File ciphertext_j was opened successfully : %0d", FILE);
+        end
+        else begin
+            $display("File ciphertext_j was NOT opened successfully : %0d", FILE);
+            $finish;
+        end
+
         foreach(CTXT_W[i]) begin
-            $fdisplay(FILE, "%c", CTXT_W[i]);
+            $fwrite(FILE, "%c", CTXT_W[i]);
         end
         $fclose(FILE);
 
@@ -210,20 +242,28 @@ module sae_tb_checks;
 
         FILE = $fopen("tv/privatekey_j.txt", "rb");
         if (FILE) begin
-            $display("File was opened successfully : %0d", FILE);
+            $display("File privatekey_j was opened successfully : %0d", FILE);
         end
         else begin
-            $display("File was NOT opened successfully : %0d", FILE);
+            $display("File privatekey_j was NOT opened successfully : %0d", FILE);
+            $finish;
         end
-        $fscanf(FILE, "%b", key_input_j);
-        $display("Public key loaded");
+        if($fscanf(FILE, "%b", key_input_j) == 1) begin
+            $display("Jesse's private key was successfully loaded");
+        end
+        else begin
+            $display("Jesse's private key was NOT loaded correctly");
+            $finish;
+        end
         $fclose(FILE);
+
         FILE = $fopen("tv/ciphertext_j.txt", "r");
         if (FILE) begin
-            $display("File was opened successfully : %0d", FILE);
+            $display("File ciphertext_j was opened successfully : %0d", FILE);
         end
         else begin
-            $display("File was NOT opened successfully : %0d", FILE);
+            $display("File ciphertext_j was NOT opened successfully : %0d", FILE);
+            $finish;
         end
         while($fscanf(FILE, "%c", char_j) == 1) begin
             data_input_j = int'(char_j);
@@ -232,15 +272,24 @@ module sae_tb_checks;
             @(posedge clk);
             inputs_valid_j = 1'b0;
             @(posedge clk);
-        // CONTROLLO CHE NON CI SIANO ERRORI
-            #3 if (output_ready_j == 1'b1)
-                PTXT_J.push_back(data_output_j);
-            else
-               $write("Output non ready yet"); 
+            #3 while(output_ready_j != 1'b1) begin
+                if(err_invalid_ctxt_char_j == 1'b1) begin
+                    $display("An invalid character was inserted in the ciphertext");
+                    $finish;
+                end
+            end
+            PTXT_J.push_back(data_output_j);
         end
         $fclose(FILE);
 
         FILE = $fopen("tv/plaintext_j.txt", "w");
+        if (FILE) begin
+            $display("File plaintext_j was opened successfully : %0d", FILE);
+        end
+        else begin
+            $display("File plaintext_j was NOT opened successfully : %0d", FILE);
+            $finish;
+        end
         foreach(PTXT_J[i]) begin
             $fwrite(FILE, "%c", PTXT_J[i]);
         end
@@ -256,11 +305,26 @@ module sae_tb_checks;
         //-------------------------------------------------------------------
 
         FILE = $fopen("tv/plaintext_w.txt", "r");
+        if (FILE) begin
+            $display("File plaintext_w was opened successfully : %0d", FILE);
+        end
+        else begin
+            $display("File plaintext_w was NOT opened successfully : %0d", FILE);
+            $finish;
+        end
         while($fscanf(FILE, "%c", char_w2) == 1) begin
             PTXT_W.push_back(int'(char_w2));
         end
         $fclose(FILE);
+
         FILE = $fopen("tv/plaintext_j.txt", "r");
+        if (FILE) begin
+            $display("File plaintext_j was opened successfully : %0d", FILE);
+        end
+        else begin
+            $display("File plaintext_j was NOT opened successfully : %0d", FILE);
+            $finish;
+        end
         while($fscanf(FILE, "%c", char_j2) == 1) begin
             PTXT_J.push_back(int'(char_j2));
         end
@@ -268,13 +332,9 @@ module sae_tb_checks;
 
         if(PTXT_J == PTXT_W) begin
             $display("Plaintexts MATCH!");
-            $display("PTXT_W = %s", PTXT_W);
-            $display("PTXT_J = %s", PTXT_J);
         end
         else begin
-            $display("Plaintexts NOT match")
-            $display("PTXT_W = %s", PTXT_W);
-            $display("PTXT_J = %s", PTXT_J);
+            $display("Plaintexts NOT match");
         end
     end
 endmodule
